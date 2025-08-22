@@ -12,18 +12,18 @@ const expand = () => (isExpanded.value = true);
 const collapse = () => (isExpanded.value = false);
 const toggle = () => (isExpanded.value = !isExpanded.value);
 
-// Detect mobile (max-width: 768px)
-const isMobile = ref(window.matchMedia("(max-width: 768px)").matches);
+// Detect mobile (max-width: 600px for the bottom bar)
+const isMobile = ref(window.matchMedia("(max-width: 600px)").matches);
 
 window.addEventListener("resize", () => {
-  isMobile.value = window.matchMedia("(max-width: 768px)").matches;
+  isMobile.value = window.matchMedia("(max-width: 600px)").matches;
 });
 </script>
 
 <template>
   <aside
     class="side-menu-wrapper"
-    :class="{ 'is-expanded': isExpanded, mobile: isMobile }"
+    :class="{ 'is-expanded': isExpanded, 'is-mobile': isMobile }"
     :style="{ '--menu-width': menuWidth }"
     role="navigation"
     :aria-expanded="isExpanded"
@@ -45,21 +45,20 @@ window.addEventListener("resize", () => {
 
     <ul class="side-menu-links">
       <li><router-link to="/">Recettes</router-link></li>
-      <li class="divider-item"><div class="divider"></div></li>
-      <li><router-link to="/recipe/new">Nouvel Recette</router-link></li>
-      <li class="divider-item"><div class="divider"></div></li>
+      <li class="divider-item" v-if="!isMobile"><div class="divider"></div></li>
+      <li><router-link to="/recipe/new">Nouvelle Recette</router-link></li>
+      <li class="divider-item" v-if="!isMobile"><div class="divider"></div></li>
       <li><router-link to="/ingredients">Ingrédients</router-link></li>
-      <li class="divider-item"><div class="divider"></div></li>
+      <li class="divider-item" v-if="!isMobile"><div class="divider"></div></li>
       <li><router-link to="/ingredient/new">Nouvel Ingrédient</router-link></li>
-      <li class="divider-item"><div class="divider"></div></li>
+      <li class="divider-item" v-if="!isMobile"><div class="divider"></div></li>
       <li><router-link to="/planner">Organisateur</router-link></li>
     </ul>
   </aside>
 </template>
 
-
 <style scoped>
-/* Root menu styles */
+/* Base styles for the side menu (desktop) */
 .side-menu-wrapper {
   position: fixed;
   top: 0;
@@ -72,10 +71,27 @@ window.addEventListener("resize", () => {
   transition: width 0.3s ease-in-out;
   overflow-x: hidden;
   z-index: 100;
+  flex-direction: column; /* Ensure vertical layout on desktop */
 }
 
-/* Thin white separator line */
-.side-menu-wrapper::before {
+/* Base link styles */
+.side-menu-links {
+  list-style: none;
+  padding: 0.5rem 0;
+  margin: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex; /* Flexbox for layout */
+  flex-direction: column; /* Vertical list for desktop */
+}
+
+.side-menu-wrapper.is-expanded .side-menu-links {
+  opacity: 1;
+}
+
+/* ... (other desktop styles like dividers, hover effects, etc.) ... */
+.side-menu-wrapper::before,
+.side-menu-wrapper::after {
   content: "";
   position: absolute;
   top: 0;
@@ -95,18 +111,16 @@ window.addEventListener("resize", () => {
   background: linear-gradient(
     to right,
     #002654 33.33%,
-    #ffffff 33.33%, 
+    #ffffff 33.33%,
     #ffffff 66.66%,
-    #ed2939 66.66% 
+    #ed2939 66.66%
   );
 }
 
-/* Expanded state */
 .side-menu-wrapper.is-expanded .side-menu-links {
   opacity: 1;
 }
 
-/* Top section (menu button) */
 .menu-top-section {
   display: flex;
   align-items: center;
@@ -122,7 +136,6 @@ window.addEventListener("resize", () => {
   gap: 1.5rem;
 }
 
-/* Hamburger bars */
 .bar {
   width: 25px;
   height: 3px;
@@ -140,22 +153,8 @@ window.addEventListener("resize", () => {
   transition: background-color 0.3s ease;
 }
 
-/* Hover color for the nav button */
 .nav-button:hover {
   background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Menu links */
-.side-menu-links {
-  list-style: none;
-  padding: 0.5rem 0;
-  margin: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.side-menu-links .divider-item:hover {
-  background: transparent;
 }
 
 .side-menu-links a {
@@ -180,7 +179,6 @@ window.addEventListener("resize", () => {
   border-radius: 5px;
 }
 
-/* Divider styles */
 .divider-item {
   padding: 0.5rem 1rem;
   opacity: 0;
@@ -198,58 +196,31 @@ window.addEventListener("resize", () => {
   margin: 0;
 }
 
-/* -------------------
-   RESPONSIVE DESIGN
-------------------- */
-
-/* Medium screens: tablets */
-@media (max-width: 1024px) {
-  .side-menu-wrapper {
-    width: var(--menu-width, 50px);
-  }
-
-  .side-menu-wrapper.is-expanded {
-    width: 180px;
-  }
-
-  .side-menu-links a {
-    padding: 0.8rem 1rem;
-    font-size: 0.95rem;
-  }
-}
-
-/* Tablets / small screens */
+/* --- Responsive styles for tablets and phones --- */
 @media (max-width: 768px) {
   .side-menu-wrapper {
     width: 55px;
-    height: 100vh; /* Full height */
-    overflow-y: auto; /* Enable vertical scroll */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
   }
 
   .side-menu-wrapper.is-expanded {
     width: 160px;
   }
-
-  .menu-top-section {
-    height: 50px;
-  }
-
-  .side-menu-links {
-    padding: 0.5rem;
-  }
 }
 
-/* Mobile: keep bottom nav style but allow scrolling if vertical */
+/* --- Mobile: turn into bottom nav (key changes here) --- */
 @media (max-width: 600px) {
   .side-menu-wrapper {
-    top: 0; /* Switch to vertical sidebar for scrollable nav */
+    top: auto;
+    bottom: 0;
     left: 0;
-    width: 60px; 
-    height: 100vh; /* Full height for scrolling */
-    flex-direction: column;
-    overflow-y: auto; /* Enable scroll */
-    padding-top: 1rem;
+    width: 100%;
+    height: 60px;
+    padding: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent links from wrapping */
   }
 
   .side-menu-wrapper::before,
@@ -258,21 +229,32 @@ window.addEventListener("resize", () => {
   }
 
   .menu-top-section {
-    display: block; /* show toggle button */
+    display: none; /* hide hamburger button */
   }
 
   .side-menu-links {
-    display: block; /* vertical links */
+    display: flex;
+    flex-direction: row; /* Horizontal list for mobile */
+    justify-content: space-around;
+    align-items: center;
     opacity: 1 !important;
-    padding: 0.5rem 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
   }
 
   .side-menu-links li {
-    margin-bottom: 0.2rem;
+    flex-shrink: 0; /* Prevent items from shrinking */
+    text-align: center;
+  }
+
+  .side-menu-links a {
+    padding: 0 0.8rem; /* Adjusted padding for better fit */
+    font-size: 0.85rem;
   }
 
   .divider-item {
-    display: block;
+    display: none; /* no dividers in bottom nav */
   }
 }
 </style>
