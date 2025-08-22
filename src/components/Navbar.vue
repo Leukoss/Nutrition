@@ -218,10 +218,13 @@ window.addEventListener("resize", () => {
   }
 }
 
-/* Small tablets / large phones */
+/* Tablets / small screens */
 @media (max-width: 768px) {
   .side-menu-wrapper {
     width: 55px;
+    height: 100vh; /* Full height */
+    overflow-y: auto; /* Enable vertical scroll */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
   }
 
   .side-menu-wrapper.is-expanded {
@@ -232,30 +235,21 @@ window.addEventListener("resize", () => {
     height: 50px;
   }
 
-  .side-menu-links a {
-    padding: 0.7rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .side-menu-wrapper.mobile {
-    width: 100% !important;
-    height: 60px;
-    flex-direction: row;
+  .side-menu-links {
+    padding: 0.5rem;
   }
 }
 
-/* Mobile: turn into bottom nav */
+/* Mobile: keep bottom nav style but allow scrolling if vertical */
 @media (max-width: 600px) {
   .side-menu-wrapper {
-    top: auto;
-    bottom: 0;
+    top: 0; /* Switch to vertical sidebar for scrollable nav */
     left: 0;
-    width: 100%;
-    height: 60px;
-    padding: 0;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
+    width: 60px; 
+    height: 100vh; /* Full height for scrolling */
+    flex-direction: column;
+    overflow-y: auto; /* Enable scroll */
+    padding-top: 1rem;
   }
 
   .side-menu-wrapper::before,
@@ -264,32 +258,21 @@ window.addEventListener("resize", () => {
   }
 
   .menu-top-section {
-    display: none; /* hide hamburger button */
+    display: block; /* show toggle button */
   }
 
   .side-menu-links {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
+    display: block; /* vertical links */
     opacity: 1 !important;
-    width: 100%;
-    height: 100%;
-    padding: 0;
+    padding: 0.5rem 0;
   }
 
   .side-menu-links li {
-    flex: 1;
-    text-align: center;
-  }
-
-  .side-menu-links a {
-    padding: 0.5rem;
-    font-size: 0.85rem;
+    margin-bottom: 0.2rem;
   }
 
   .divider-item {
-    display: none; /* no dividers in bottom nav */
+    display: block;
   }
 }
 </style>
