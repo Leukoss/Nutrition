@@ -10,20 +10,33 @@ watch(menuWidth, (newWidth) => emit('update-width', newWidth));
 
 const expand = () => (isExpanded.value = true);
 const collapse = () => (isExpanded.value = false);
+const toggle = () => (isExpanded.value = !isExpanded.value);
+
+// Detect mobile (max-width: 768px)
+const isMobile = ref(window.matchMedia("(max-width: 768px)").matches);
+
+window.addEventListener("resize", () => {
+  isMobile.value = window.matchMedia("(max-width: 768px)").matches;
+});
 </script>
 
 <template>
   <aside
     class="side-menu-wrapper"
-    :class="{ 'is-expanded': isExpanded }"
+    :class="{ 'is-expanded': isExpanded, mobile: isMobile }"
     :style="{ '--menu-width': menuWidth }"
     role="navigation"
     :aria-expanded="isExpanded"
-    @mouseenter="expand"
-    @mouseleave="collapse"
+    @mouseenter="!isMobile && expand()"
+    @mouseleave="!isMobile && collapse()"
   >
-    <div class="menu-top-section">
-      <div class="nav-button" aria-label="Toggle menu">
+    <div 
+      v-if="!isMobile" 
+      class="menu-top-section" 
+      @click="toggle" 
+      aria-label="Toggle menu"
+    >
+      <div class="nav-button">
         <span class="bar"></span>
         <span class="bar"></span>
         <span class="bar"></span>
@@ -31,39 +44,19 @@ const collapse = () => (isExpanded.value = false);
     </div>
 
     <ul class="side-menu-links">
-      <li>
-        <router-link to="/">Recettes</router-link>
-      </li>
-      <li class="divider-item">
-        <div class="divider"></div>
-      </li>
-      <li>
-        <router-link to="/recipe/new">Nouvel Recette</router-link>
-      </li>
-      <li class="divider-item">
-        <div class="divider"></div>
-      </li>
-      <li>
-        <router-link to="/ingredients">Ingrédients</router-link>
-      </li>
-      <li class="divider-item">
-        <div class="divider"></div>
-      </li>
-      <li>
-        <router-link to="/ingredient/new">Nouvel Ingrédient</router-link>
-      </li>
-      <li class="divider-item">
-        <div class="divider"></div>
-      </li>
-      <li>
-        <router-link to="/planner">Organisateur</router-link>
-      </li>
-      <li class="divider-item">
-        <div class="divider"></div>
-      </li>
+      <li><router-link to="/">Recettes</router-link></li>
+      <li class="divider-item"><div class="divider"></div></li>
+      <li><router-link to="/recipe/new">Nouvel Recette</router-link></li>
+      <li class="divider-item"><div class="divider"></div></li>
+      <li><router-link to="/ingredients">Ingrédients</router-link></li>
+      <li class="divider-item"><div class="divider"></div></li>
+      <li><router-link to="/ingredient/new">Nouvel Ingrédient</router-link></li>
+      <li class="divider-item"><div class="divider"></div></li>
+      <li><router-link to="/planner">Organisateur</router-link></li>
     </ul>
   </aside>
 </template>
+
 
 <style scoped>
 /* Root menu styles */
@@ -242,6 +235,12 @@ const collapse = () => (isExpanded.value = false);
   .side-menu-links a {
     padding: 0.7rem 1rem;
     font-size: 0.9rem;
+  }
+
+  .side-menu-wrapper.mobile {
+    width: 100% !important;
+    height: 60px;
+    flex-direction: row;
   }
 }
 
