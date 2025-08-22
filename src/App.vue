@@ -135,6 +135,7 @@ const updateContentMargin = (newWidth) => {
     margin-left: 0 !important; /* sidebar hidden on mobile */
     width: 100% !important;
     padding: 0.7rem;
+    padding-bottom: 60px; /* Add this line */
   }
 }
 </style>
