@@ -34,8 +34,32 @@ const collapse = () => (isExpanded.value = false);
       <li>
         <router-link to="/">Recettes</router-link>
       </li>
+      <li class="divider-item">
+        <div class="divider"></div>
+      </li>
+      <li>
+        <router-link to="/recipe/new">Nouvel Recette</router-link>
+      </li>
+      <li class="divider-item">
+        <div class="divider"></div>
+      </li>
+      <li>
+        <router-link to="/ingredients">Ingrédients</router-link>
+      </li>
+      <li class="divider-item">
+        <div class="divider"></div>
+      </li>
+      <li>
+        <router-link to="/ingredient/new">Nouvel Ingrédient</router-link>
+      </li>
+      <li class="divider-item">
+        <div class="divider"></div>
+      </li>
       <li>
         <router-link to="/planner">Organisateur</router-link>
+      </li>
+      <li class="divider-item">
+        <div class="divider"></div>
       </li>
     </ul>
   </aside>
@@ -57,7 +81,7 @@ const collapse = () => (isExpanded.value = false);
   z-index: 100;
 }
 
-/* Enhances the flag by adding a thin white line next to the blue nav bar */
+/* Thin white separator line */
 .side-menu-wrapper::before {
   content: "";
   position: absolute;
@@ -123,7 +147,7 @@ const collapse = () => (isExpanded.value = false);
   transition: background-color 0.3s ease;
 }
 
-/* Hover color for the nav button is now a semi-transparent white */
+/* Hover color for the nav button */
 .nav-button:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
@@ -134,8 +158,11 @@ const collapse = () => (isExpanded.value = false);
   padding: 0.5rem 0;
   margin: 0;
   opacity: 0;
-  background: transparent;
   transition: opacity 0.3s ease;
+}
+
+.side-menu-links .divider-item:hover {
+  background: transparent;
 }
 
 .side-menu-links a {
@@ -147,7 +174,6 @@ const collapse = () => (isExpanded.value = false);
   transition: color 0.3s ease-in-out;
 }
 
-/* Link hover color is now a lighter blue */
 .side-menu-links a:hover {
   color: #6495ED;
 }
@@ -156,9 +182,115 @@ const collapse = () => (isExpanded.value = false);
   transition: background-color 0.3s ease, border-radius 0.3s ease;
 }
 
-/* List item hover background is now a semi-transparent white */
 .side-menu-links li:hover {
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 5px;
+}
+
+/* Divider styles */
+.divider-item {
+  padding: 0.5rem 1rem;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+.side-menu-wrapper.is-expanded .divider-item {
+  opacity: 1;
+  transition: opacity 0.3s ease-in 0.2s;
+}
+
+.divider {
+  height: 1px;
+  background-color: #ed2939;
+  margin: 0;
+}
+
+/* -------------------
+   RESPONSIVE DESIGN
+------------------- */
+
+/* Medium screens: tablets */
+@media (max-width: 1024px) {
+  .side-menu-wrapper {
+    width: var(--menu-width, 50px);
+  }
+
+  .side-menu-wrapper.is-expanded {
+    width: 180px;
+  }
+
+  .side-menu-links a {
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Small tablets / large phones */
+@media (max-width: 768px) {
+  .side-menu-wrapper {
+    width: 55px;
+  }
+
+  .side-menu-wrapper.is-expanded {
+    width: 160px;
+  }
+
+  .menu-top-section {
+    height: 50px;
+  }
+
+  .side-menu-links a {
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile: turn into bottom nav */
+@media (max-width: 600px) {
+  .side-menu-wrapper {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    padding: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .side-menu-wrapper::before,
+  .side-menu-wrapper::after {
+    display: none; /* remove flag decoration on mobile */
+  }
+
+  .menu-top-section {
+    display: none; /* hide hamburger button */
+  }
+
+  .side-menu-links {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    opacity: 1 !important;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+  }
+
+  .side-menu-links li {
+    flex: 1;
+    text-align: center;
+  }
+
+  .side-menu-links a {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .divider-item {
+    display: none; /* no dividers in bottom nav */
+  }
 }
 </style>
