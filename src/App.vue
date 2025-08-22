@@ -38,6 +38,7 @@ const updateContentMargin = (newWidth) => {
   min-height: 100vh;
 }
 
+/* ---------- HEADER ---------- */
 .page-header {
   position: fixed;
   top: 0;
@@ -76,8 +77,64 @@ const updateContentMargin = (newWidth) => {
   margin: 0;
 }
 
+/* ---------- MAIN CONTENT ---------- */
 .main-content-wrapper {
-  margin-top: 80px; /* <-- adds space below header */
+  margin-top: 80px; /* space under header */
   padding: 1.5rem;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+/* -------------------
+   RESPONSIVE DESIGN
+------------------- */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .header-name {
+    font-size: 1.3rem;
+  }
+
+  .main-content-wrapper {
+    padding: 1rem;
+  }
+}
+
+/* Small tablets / landscape phones */
+@media (max-width: 768px) {
+  .page-header {
+    height: 55px;
+    padding: 0 15px;
+  }
+
+  .header-name {
+    font-size: 1.1rem;
+  }
+
+  .main-content-wrapper {
+    margin-top: 70px;
+    padding: 0.8rem;
+  }
+}
+
+/* Mobile phones */
+@media (max-width: 600px) {
+  .page-header {
+    left: 0 !important; /* ignore sidebar width */
+    width: 100% !important;
+    height: 50px;
+    padding: 0 10px;
+    justify-content: flex-start;
+  }
+
+  .header-name {
+    font-size: 1rem;
+  }
+
+  .main-content-wrapper {
+    margin-top: 65px;
+    margin-left: 0 !important; /* sidebar hidden on mobile */
+    width: 100% !important;
+    padding: 0.7rem;
+  }
 }
 </style>
