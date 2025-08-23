@@ -1,62 +1,131 @@
 <script setup>
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../firebase';
 import { ref } from 'vue';
 
 const ingredientData = ref({
-  name: '',
-  calories: 0,
-  macros: {
-    protein: 0,
-    carbs: 0,
-    fats: 0,
-  },
-  vitamins: [],
+  name: '',
+  calories: 0,
+  macros: {
+    proteins: 0,
+    carbs: 0,
+    fats: 0,
+  },
+  vitamins: [],
+  image: null,
 });
 
 const availableVitamins = [
-  'Vitamine A',
-  'Vitamine B1',
-  'Vitamine B2',
-  'Vitamine B3',
-  'Vitamine B5',
-  'Vitamine B6',
-  'Vitamine B7',
-  'Vitamine B9',
-  'Vitamine B12',
-  'Vitamine C',
-  'Vitamine D',
-  'Vitamine E',
-  'Vitamine K',
+  'Vitamine A',
+  'Vitamine B1',
+  'Vitamine B2',
+  'Vitamine B3',
+  'Vitamine B5',
+  'Vitamine B6',
+  'Vitamine B7',
+  'Vitamine B9',
+  'Vitamine B12',
+  'Vitamine C',
+  'Vitamine D',
+  'Vitamine E',
+  'Vitamine K',
 ];
 
 const password = ref('');
 const SECRET_PASSWORD = import.meta.env.VITE_SECRET_PASSWORD;
 
+// Refs for image handling
+const ingredientImage = ref(null);
+const imagePreviewUrl = ref(null);
+
+// Handle file selection
+function handleFileChange(event) {
+  const file = event.target.files[0];
+  if (file) {
+    ingredientImage.value = file;
+    imagePreviewUrl.value = URL.createObjectURL(file);
+  } else {
+    ingredientImage.value = null;
+    imagePreviewUrl.value = null;
+  }
+}
+
+// Upload the image to Vercel Blob via your API route
+async function uploadImage() {
+  if (!ingredientImage.value) return null;
+  const file = ingredientImage.value;
+
+  try {
+    const response = await fetch(`/api/upload?filename=${file.name}`, {
+      method: 'POST',
+      body: file,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload image.');
+    }
+
+    const blob = await response.json();
+    return blob.url;
+  } catch (e) {
+    console.error('Error uploading image:', e);
+    alert('Error uploading image.');
+    return null;
+  }
+}
+
+// Refactored addIngredient function to save to Supabase
 async function addIngredient() {
-  if (password.value !== SECRET_PASSWORD) {
-    alert('Incorrect password.');
-    return;
-  }
-  try {
-    await addDoc(collection(db, 'ingredients'), ingredientData.value);
-    alert('Ingredient added successfully!');
-    // Reset form fields
-    ingredientData.value = {
-      name: '',
-      calories: 0,
-      macros: {
-        proteins: 0,
-        fats: 0,
-        carbs: 0,
-      },
-      vitamins: [],
-    };
-    password.value = '';
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    alert('Error adding ingredient.');
-    }
+  if (password.value !== SECRET_PASSWORD) {
+    console.log('Mot de passe entré :', password.value);
+    console.log('Mot de passe secret attendu :', SECRET_PASSWORD);
+
+    alert('Mot de passe incorrect.');
+    return;
+  }
+
+  try {
+    // 1. Upload the image first and get its URL
+    const imageUrl = await uploadImage();
+    console.log('URL de l\'image Vercel Blob:', imageUrl);
+
+    if (!imageUrl) {
+      return;
+    }
+    ingredientData.value.image = imageUrl;
+
+    // 2. Send the full ingredient data to your new Supabase API route
+    const response = await fetch(`/api/add-ingredient`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(ingredientData.value),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Échec de l\'ajout de l\'ingrédient à la base de données.');
+    }
+
+    alert('Ingrédient ajouté avec succès !');
+
+    // Reset form fields
+    ingredientData.value = {
+      name: '',
+      calories: 0,
+      macros: {
+        protein: 0,
+        fats: 0,
+        carbs: 0,
+      },
+      vitamins: [],
+      image: null,
+    };
+    ingredientImage.value = null;
+    imagePreviewUrl.value = null;
+    password.value = '';
+  } catch (e) {
+    console.error('Erreur lors de l\'ajout de l\'ingrédient:', e);
+    alert('Erreur lors de l\'ajout de l\'ingrédient.');
+  }
 }
 </script>
 
@@ -73,6 +142,19 @@ async function addIngredient() {
           required 
           v-french-required="'Veuillez renseigner le nom de l\'ingrédient.'"
         />
+      </div>
+
+      <div class="form-group image-upload-group">
+        <label for="image">Image de l'Ingrédient:</label>
+        <label for="image" class="image-drop-zone">
+          <input type="file" id="image" @change="handleFileChange" accept="image/*" />
+          <p v-if="!imagePreviewUrl" class="placeholder">
+            <i>Insérer votre image ici</i>
+          </p>
+          <div v-if="imagePreviewUrl" class="image-preview">
+            <img :src="imagePreviewUrl" alt="Aperçu de l'image" />
+          </div>
+        </label>
       </div>
 
       <div class="form-group">
@@ -119,7 +201,6 @@ async function addIngredient() {
       </div>
 
       <h3>Vitamines (pour 100g)</h3>
-
       <div class="checkbox-group">
         <div v-for="vitamin in availableVitamins" :key="vitamin" class="checkbox-item">
           <input 
@@ -275,6 +356,62 @@ button[type="submit"]:active {
   color: #333;
   margin: 0;
   cursor: pointer;
+}
+
+/* Add this new section for the image drop zone */
+.image-drop-zone {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px; /* Adjust height as needed */
+  width: 100%;
+  border: 2px dashed #002654;
+  border-radius: 8px;
+  background-color: #f0f8ff; /* Light blue color */
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.image-drop-zone:hover {
+  background-color: #e6f0f7; /* Slightly darker on hover */
+  border-color: #ed2939;
+}
+
+/* Hide the actual file input */
+.image-drop-zone input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.image-drop-zone .placeholder {
+  font-style: italic;
+  color: #888;
+  padding: 1rem;
+  margin: 0;
+}
+
+.image-drop-zone .image-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 10px; /* A little padding around the image */
+}
+
+.image-drop-zone .image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 5px;
 }
 
 /* 📱 Mobile responsiveness */

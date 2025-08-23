@@ -6,7 +6,6 @@ import router from './router'
 import App from './App.vue'
 
 import './assets/main.css'
-import './firebase'
 
 const app = createApp(App)
 
