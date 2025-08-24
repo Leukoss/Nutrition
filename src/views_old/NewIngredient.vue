@@ -1,34 +1,52 @@
 <script setup>
 import { ref } from 'vue';
 
+// Ingredient data model
 const ingredientData = ref({
-  name: '',
-  calories: 0,
-  macros: {
-    proteins: 0,
-    carbs: 0,
-    fats: 0,
-  },
-  vitamins: [],
-  image: null,
+  name: '',
+  calories: 0,
+  macros: {
+    proteins: 0,
+    carbs: 0,
+    fats: 0,
+  },
+  food_type: 'Légumes',
+  vitamins: [],
+  image: null,
 });
 
+// List of available vitamins
 const availableVitamins = [
-  'Vitamine A',
-  'Vitamine B1',
-  'Vitamine B2',
-  'Vitamine B3',
-  'Vitamine B5',
-  'Vitamine B6',
-  'Vitamine B7',
-  'Vitamine B9',
-  'Vitamine B12',
-  'Vitamine C',
-  'Vitamine D',
-  'Vitamine E',
-  'Vitamine K',
+  'Vitamine A',
+  'Vitamine B1',
+  'Vitamine B2',
+  'Vitamine B3',
+  'Vitamine B5',
+  'Vitamine B6',
+  'Vitamine B7',
+  'Vitamine B9',
+  'Vitamine B12',
+  'Vitamine C',
+  'Vitamine D',
+  'Vitamine E',
+  'Vitamine K',
 ];
 
+// List of available food types
+const availableFoodTypes = [
+  'Légumes',
+  'Fruits',
+  'Viandes',
+  'Poissons',
+  'Produits Laitiers',
+  'Céréales',
+  'Graines et Noix',
+  'Épices et Herbes',
+  'Boissons',
+  'Autres',
+];
+
+// Secret password from environment variable
 const password = ref('');
 const SECRET_PASSWORD = import.meta.env.VITE_SECRET_PASSWORD;
 
@@ -38,94 +56,47 @@ const imagePreviewUrl = ref(null);
 
 // Handle file selection
 function handleFileChange(event) {
-  const file = event.target.files[0];
-  if (file) {
-    ingredientImage.value = file;
-    imagePreviewUrl.value = URL.createObjectURL(file);
-  } else {
-    ingredientImage.value = null;
-    imagePreviewUrl.value = null;
-  }
+  const file = event.target.files[0];
+  if (file) {
+    ingredientImage.value = file;
+    imagePreviewUrl.value = URL.createObjectURL(file);
+  } else {
+    ingredientImage.value = null;
+    imagePreviewUrl.value = null;
+  }
 }
 
-// Upload the image to Vercel Blob via your API route
-async function uploadImage() {
-  if (!ingredientImage.value) return null;
-  const file = ingredientImage.value;
+// Function to simulate form submission
+function addIngredient() {
+  if (password.value !== SECRET_PASSWORD) {
+    alert('Mot de passe incorrect.');
+    return;
+  }
 
-  try {
-    const response = await fetch(`/api/upload?filename=${file.name}`, {
-      method: 'POST',
-      body: file,
-    });
+  // Log the data to the console instead of sending to an API
+  console.log('Simulating form submission...');
+  console.log('Ingredient Data:', ingredientData.value);
+  console.log('Image Data:', ingredientImage.value);
 
-    if (!response.ok) {
-      throw new Error('Failed to upload image.');
-    }
+  // Simulate a success alert
+  alert('Ingrédient ajouté avec succès ! (Template)');
 
-    const blob = await response.json();
-    return blob.url;
-  } catch (e) {
-    console.error('Error uploading image:', e);
-    alert('Error uploading image.');
-    return null;
-  }
-}
-
-// Refactored addIngredient function to save to Supabase
-async function addIngredient() {
-  if (password.value !== SECRET_PASSWORD) {
-    console.log('Mot de passe entré :', password.value);
-    console.log('Mot de passe secret attendu :', SECRET_PASSWORD);
-
-    alert('Mot de passe incorrect.');
-    return;
-  }
-
-  try {
-    // 1. Upload the image first and get its URL
-    const imageUrl = await uploadImage();
-    console.log('URL de l\'image Vercel Blob:', imageUrl);
-
-    if (!imageUrl) {
-      return;
-    }
-    ingredientData.value.image = imageUrl;
-
-    // 2. Send the full ingredient data to your new Supabase API route
-    const response = await fetch(`/api/add-ingredient`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(ingredientData.value),
-    });
-    
-    if (!response.ok) {
-      throw new Error('Échec de l\'ajout de l\'ingrédient à la base de données.');
-    }
-
-    alert('Ingrédient ajouté avec succès !');
-
-    // Reset form fields
-    ingredientData.value = {
-      name: '',
-      calories: 0,
-      macros: {
-        protein: 0,
-        fats: 0,
-        carbs: 0,
-      },
-      vitamins: [],
-      image: null,
-    };
-    ingredientImage.value = null;
-    imagePreviewUrl.value = null;
-    password.value = '';
-  } catch (e) {
-    console.error('Erreur lors de l\'ajout de l\'ingrédient:', e);
-    alert('Erreur lors de l\'ajout de l\'ingrédient.');
-  }
+  // Reset form fields
+  ingredientData.value = {
+    name: '',
+    calories: 0,
+    macros: {
+      proteins: 0,
+      fats: 0,
+      carbs: 0,
+    },
+    food_type: '', // Reset to an empty string
+    vitamins: [],
+    image: null,
+  };
+  ingredientImage.value = null;
+  imagePreviewUrl.value = null;
+  password.value = '';
 }
 </script>
 
@@ -166,6 +137,16 @@ async function addIngredient() {
           required 
           v-french-required="'Veuillez renseigner le nombre de calories.'"
         />
+      </div>
+
+      <div class="form-group">
+        <label for="food_type">Type d'Aliment:</label>
+        <select id="food_type" v-model="ingredientData.food_type" required>
+          <option value="" disabled>-- Sélectionnez un type d'aliment --</option>
+          <option v-for="type in availableFoodTypes" :key="type" :value="type">
+            {{ type }}
+          </option>
+        </select>
       </div>
 
       <h3>Macronutriments (pour 100g)</h3>
@@ -230,6 +211,7 @@ async function addIngredient() {
 </template>
 
 <style scoped>
+/* All existing styles remain the same. The new select input will use the default form-group styling. */
 .add-ingredient-form {
   max-width: 600px;
   margin: 2rem auto;

@@ -1,141 +1,76 @@
 <script setup>
-import { ref } from 'vue';
-
 import Navbar from './components/Navbar.vue';
-
-const sidebarWidth = ref('60px');
-
-const updateContentMargin = (newWidth) => {
-  sidebarWidth.value = newWidth;
-};
+import Header from './components/Header.vue';
 </script>
 
 <template>
   <div id="app-container">
-    <Navbar @update-width="updateContentMargin" />
+    <Navbar />
 
-    <header
-      class="page-header"
-      :style="{ left: sidebarWidth, width: `calc(100% - ${sidebarWidth})` }"
-    >
-      <div class="header-spacer"></div>
+    <div id="main-layout">
+      <Header />
 
-      <h1 class="header-name">Nutrim'Aide</h1>
-    </header>
-
-    <main class="main-content-wrapper" :style="{ 'margin-left': sidebarWidth, width: `calc(100% - ${sidebarWidth})` }">
-      <Transition name="page-fade" mode="out-in">
-        <RouterView :key="locale" />
-      </Transition>
-    </main>
+      <!-- Smooth transition between routes -->
+      <transition name="fade" mode="out-in">
+        <router-view />
+      </transition>
+    </div>
   </div>
 </template>
 
-<style>
-#app-container {
+<style scoped>
+/* ------------- GLOBAL STYLE --------------- */
+
+#app-container{
+  flex-direction: row;
   display: flex;
+}
+
+/* Both Header and Main Content */
+#main-layout {  
+  /* Position and Size */
+  margin-left: var(--menu-width, 80px);
   flex-direction: column;
-  min-height: 100vh;
-}
-
-/* ---------- HEADER ---------- */
-.page-header {
-  position: fixed;
-  top: 0;
-  height: 60px;
-  color: #002654;
-  background-color: white;
-  z-index: 98;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: width 0.3s ease, left 0.3s ease;
-  border-bottom: 5px solid;
-  border-image: linear-gradient(
-    to right,
-    #002654 33.33%, 
-    #ffff 33.33%,
-    #ffff 66.66%, 
-    #ed2939 66.66%
-  ) 1;
-  padding: 0 20px;
+  flex: 1;
+
+  /* Transition */
+  transition: margin-left 0.3s ease-in-out;
 }
 
-.page-header::after {
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background-color: #002654;
+/* Main content area */
+#page-content {
+  min-height: 100vh;
+  padding: 1rem;
+  flex: 1;
+  
+  /* Color */
+  background-color: #f5f5f5;
 }
 
-.header-name {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin: 0;
+/* ------------- ROUTE TRANSITION ------------- */
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.7s ease;
 }
 
-/* ---------- MAIN CONTENT ---------- */
-.main-content-wrapper {
-  margin-top: 80px; /* space under header */
-  padding: 1.5rem;
-  transition: margin-left 0.3s ease, width 0.3s ease;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
-/* -------------------
-   RESPONSIVE DESIGN
-------------------- */
-
-/* Tablets */
-@media (max-width: 1024px) {
-  .header-name {
-    font-size: 1.3rem;
-  }
-
-  .main-content-wrapper {
-    padding: 1rem;
-  }
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
 }
 
-/* Small tablets / landscape phones */
-@media (max-width: 768px) {
-  .page-header {
-    height: 55px;
-    padding: 0 15px;
-  }
+/* --------------- RESPONSIVENESS STYLE --------------- */
 
-  .header-name {
-    font-size: 1.1rem;
-  }
-
-  .main-content-wrapper {
-    margin-top: 70px;
-    padding: 0.8rem;
-  }
-}
-
-/* Mobile phones */
+/* Mobile: sidebar at bottom */
 @media (max-width: 600px) {
-  .page-header {
-    left: 0 !important; /* ignore sidebar width */
-    width: 100% !important;
-    height: 50px;
-    padding: 0 10px;
-    justify-content: flex-start;
-  }
-
-  .header-name {
-    font-size: 1rem;
-  }
-
-  .main-content-wrapper {
-    margin-top: 65px;
-    margin-left: 0 !important; /* sidebar hidden on mobile */
-    width: 100% !important;
-    padding: 0.7rem;
-    padding-bottom: 60px; /* Add this line */
+  #main-layout {
+    margin-left: 0;
   }
 }
 </style>

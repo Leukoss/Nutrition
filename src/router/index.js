@@ -1,67 +1,36 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+// Import views
+import RecipesGallery from '@/views/RecipesGallery.vue'
+import RecipeSingle from '@/views/RecipeSingle.vue'
+import IngredientsGallery from '@/views/IngredientsGallery.vue'
+import IngredientSingle from '@/views/IngredientSingle.vue'
+import IngredientEditor from '@/views/IngredientEditor.vue'
+import RecipeEditor from '@/views/RecipeEditor.vue'
+import MealPlanner from '@/views/MealPlanner.vue'
+
 const routes = [
-  {
-    path: '/',
-    name: 'Recipes',
-    component: () => import(/* webpackChunkName: "recipes" */ '../views/Recipes.vue')
-  },
-  {
-    path: '/recipe/new',
-    name: 'NewRecipe',
-    component: () => import(/* webpackChunkName: "new-recipe" */ '../views/NewRecipe.vue')
-  },
-  {
-    path: '/recipe/:id',
-    name: 'Recipe',
-    component: () => import(/* webpackChunkName: "recipe" */ '../views/Recipe.vue'),
-    props: true
-  },
-  {
-    path: '/ingredients',
-    name: 'Ingredients',
-    component: () => import(/* webpackChunkName: "recipe" */ '../views/Ingredients.vue'),
-    props: true
-  },
-  {
-    path: '/ingredient/:id',
-    name: 'Ingredient',
-    component: () => import(/* webpackChunkName: "recipe" */ '../views/Ingredient.vue'),
-    props: true
-  },
-  {
-    path: '/ingredient/new',
-    name: 'NewIngredient',
-    component: () => import(/* webpackChunkName: "recipe" */ '../views/NewIngredient.vue'),
-    props: true
-  },
-  {
-    path: '/recipe/:id',
-    name: 'Recipe',
-    component: () => import(/* webpackChunkName: "recipe" */ '../views/Recipe.vue'),
-    props: true
-  },
-  {
-    path: '/planner',
-    name: 'Planner',
-    component: () => import(/* webpackChunkName: "planner" */ '../views/Planner.vue')
-  },
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: () => import(/* webpackChunkName: "not-found" */ '../views/NotFound.vue')
-  }
+  // Recipes
+  {path: '/recipes', name: 'recipes-gallery', component: RecipesGallery},
+  {path: '/recipes/:id', name: 'recipe-single', component: RecipeSingle, props: true},
+  {path: '/recipes/edit/:id?', name: 'recipe-editor', component: RecipeEditor, props: true},
+
+  // Ingredients
+  {path: '/ingredients', name: 'ingredients-gallery', component: IngredientsGallery},
+  {path: '/ingredients/:id', name: 'ingredient-single', component: IngredientSingle, props: true},
+  {path: '/ingredients/edit/:id?', name: 'ingredient-editor', component: IngredientEditor, props: true},
+
+  // Meal Planner
+  {path: '/meal-planner', name: 'meal-planner', component: MealPlanner},
+
+  // Default/Catch-all 404s -> redirect to recipes
+  { path: '/:pathMatch(.*)*', redirect: '/recipes' },
+  { path: '/', redirect: '/recipes' }
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes,
-  scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
-    }
-    return { top: 0, behavior: 'smooth' }
-  }
+  history: createWebHistory(),
+  routes
 })
 
 export default router

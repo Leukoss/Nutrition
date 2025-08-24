@@ -1,26 +1,46 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 
+// ------------------- STATE HANDLING ------------------- 
+
+// Default state for the navigation bar is collapsed
 const isExpanded = ref(false);
-const emit = defineEmits(['update-width']);
 
-const menuWidth = computed(() => (isExpanded.value ? '200px' : '60px'));
-
-watch(menuWidth, (newWidth) => emit('update-width', newWidth));
-
-const expand = () => (isExpanded.value = true);
+// Define the state for both collapse and expand according to isExpanded
 const collapse = () => (isExpanded.value = false);
-const toggle = () => (isExpanded.value = !isExpanded.value);
+const expand = () => (isExpanded.value = true);
+const toggle = () => {isExpanded.value = !isExpanded.value};
 
-// Detect mobile (max-width: 600px for the bottom bar)
+// ------------------- MOBILE HANDLING ------------------- 
+
+// Detect mobile (max-width: 600px for the bottom bar) returning a boolean
 const isMobile = ref(window.matchMedia("(max-width: 600px)").matches);
 
+// Listen to the resizing to match the mobile format
 window.addEventListener("resize", () => {
   isMobile.value = window.matchMedia("(max-width: 600px)").matches;
+});
+
+// --------------- SIZE FOR NAVIGATION BAR ------------------- 
+
+// Either 200px or 60px depending if the state is collapse or expand
+const menuWidth = computed(() => (isExpanded.value ? '200px' : '80px'));
+
+// ------------------- DYNAMIC CSS VARIABLE ------------------- 
+
+// Watch menuWidth and set CSS variable on root
+watch(menuWidth, (newWidth) => {
+  document.documentElement.style.setProperty('--menu-width', newWidth);
+});
+
+// Set initial value on mounted
+onMounted(() => {
+  document.documentElement.style.setProperty('--menu-width', menuWidth.value);
 });
 </script>
 
 <template>
+  <!-- Content related to the main content -->
   <aside
     class="side-menu-wrapper"
     :class="{ 'is-expanded': isExpanded, 'is-mobile': isMobile }"
@@ -30,10 +50,11 @@ window.addEventListener("resize", () => {
     @mouseenter="!isMobile && expand()"
     @mouseleave="!isMobile && collapse()"
   >
-    <div 
-      v-if="!isMobile" 
-      class="menu-top-section" 
-      @click="toggle" 
+    <!-- Hamburger button only displayed for non mobile rendering -->
+    <div
+      v-if="!isMobile"
+      class="menu-top-section"
+      @click="toggle"
       aria-label="Toggle menu"
     >
       <div class="nav-button">
@@ -44,70 +65,42 @@ window.addEventListener("resize", () => {
     </div>
 
     <ul class="side-menu-links">
-      <li><router-link to="/">Recettes</router-link></li>
+      <li><router-link to ="/recipes">Recettes</router-link></li>
       <li class="divider-item" v-if="!isMobile"><div class="divider"></div></li>
-      <li><router-link to="/recipe/new">Nouvelle Recette</router-link></li>
+      <li><router-link to ="/ingredients">Ingrédients</router-link></li>
       <li class="divider-item" v-if="!isMobile"><div class="divider"></div></li>
-      <li><router-link to="/ingredients">Ingrédients</router-link></li>
-      <li class="divider-item" v-if="!isMobile"><div class="divider"></div></li>
-      <li><router-link to="/ingredient/new">Nouvel Ingrédient</router-link></li>
-      <li class="divider-item" v-if="!isMobile"><div class="divider"></div></li>
-      <li><router-link to="/planner">Organisateur</router-link></li>
+      <li><router-link to ="/meal-planner">Organisateur</router-link></li>
     </ul>
   </aside>
 </template>
 
 <style scoped>
-/* Base styles for the side menu (desktop) */
+/* --------------- GLOBAL STYLE --------------- */
+
 .side-menu-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: var(--menu-width, 60px);
-  background-color: #002654; /* Blue background */
+  /* Color */
+  background-color: #002654;
   color: #fff;
-  padding-right: 20px;
-  transition: width 0.3s ease-in-out;
-  overflow-x: hidden;
+
+  /* Size and position */
+  width: var(--menu-width);
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
   z-index: 100;
-  flex-direction: column; /* Ensure vertical layout on desktop */
-}
-
-/* Base link styles */
-.side-menu-links {
-  list-style: none;
-  padding: 0.5rem 0;
-  margin: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  display: flex; /* Flexbox for layout */
-  flex-direction: column; /* Vertical list for desktop */
-}
-
-.side-menu-wrapper.is-expanded .side-menu-links {
-  opacity: 1;
-}
-
-/* ... (other desktop styles like dividers, hover effects, etc.) ... */
-.side-menu-wrapper::before,
-.side-menu-wrapper::after {
-  content: "";
-  position: absolute;
+  left: 0;
   top: 0;
-  right: 12px;
-  height: 100%;
-  width: 1px;
-  background-color: #fff;
+
+  /* Avoid overlapping */
+  padding-right: 20px;
+  overflow-x: hidden;
+
+  /* Smooth transition */
+  transition: width 0.3s ease-in-out;
 }
 
 .side-menu-wrapper::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 100%;
-  width: 12px;
+  /* Content */
   background: linear-gradient(
     to right,
     #002654 33.33%,
@@ -115,41 +108,40 @@ window.addEventListener("resize", () => {
     #ffffff 66.66%,
     #ed2939 66.66%
   );
+  content: "";
+
+  /* Position */
+  position: absolute;
+  height: 100%;
+  width: 12px;
+  right: 0;
+  top: 0;  
 }
 
-.side-menu-wrapper.is-expanded .side-menu-links {
-  opacity: 1;
-}
+/* --------------- HAMBURGER STYLE --------------- */
 
 .menu-top-section {
-  display: flex;
-  align-items: center;
+  /* Position */
   justify-content: center;
+  align-items: center;
+  display: flex;
   height: 60px;
-  padding: 0 1rem;
-  cursor: pointer;
+
+  /* Transition */
   transition: all 0.3s ease-in-out, justify-content 0.3s ease-in-out;
 }
 
-.side-menu-wrapper.is-expanded .menu-top-section {
-  justify-content: flex-start;
-  gap: 1.5rem;
-}
-
-.bar {
-  width: 25px;
-  height: 3px;
-  background-color: #fff;
-  border-radius: 1.5px;
-  transition: all 0.3s ease;
-}
-
 .nav-button {
-  display: flex;
+  /* Position */
   flex-direction: column;
+  display: inline-flex;
+  padding: 0.9rem;
   gap: 5px;
-  padding: 0.7rem;
+
+  /* Shape */
   border-radius: 50%;
+
+  /* Background Transition */
   transition: background-color 0.3s ease;
 }
 
@@ -157,12 +149,48 @@ window.addEventListener("resize", () => {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
+.bar {
+  /* Color */
+  background-color: #fff;
+
+  /* Shape */
+  border-radius: 1.5px;
+  width: 25px;
+  height: 3px;
+}
+
+/* ------------- NAVIGATION LINKS STYLE ------------- */
+
+/* Style when collapse */
+.side-menu-links {
+  flex-direction: column;
+  padding: 0.5rem 0;
+  list-style: none;
+  display: flex;
+  opacity: 0;
+  margin: 3;
+
+  /* Transition */
+  transition: opacity 0.3s ease;
+}
+
+/* Style when expand */
+.side-menu-wrapper.is-expanded .side-menu-links {
+  opacity: 1;
+}
+
 .side-menu-links a {
-  display: block;
+  /* Position */
   padding: 1rem 1.5rem;
-  color: #fff;
+  display: block;
+
+  /* Text */
   text-decoration: none;
   white-space: nowrap;
+  font-weight: bold;
+  color: #fff;
+
+  /* Transition */
   transition: color 0.3s ease-in-out;
 }
 
@@ -170,33 +198,31 @@ window.addEventListener("resize", () => {
   color: #6495ED;
 }
 
-.side-menu-links li {
-  transition: background-color 0.3s ease, border-radius 0.3s ease;
-}
-
-.side-menu-links li:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 5px;
-}
+/* ------------- DIVIDER STYLE ------------- */
 
 .divider-item {
+  /* Style */
   padding: 0.5rem 1rem;
   opacity: 0;
+
+  /* Transition */
   transition: opacity 0.3s ease-out;
 }
 
-.side-menu-wrapper.is-expanded .divider-item {
-  opacity: 1;
-  transition: opacity 0.3s ease-in 0.2s;
-}
-
 .divider {
-  height: 1px;
   background-color: #ed2939;
+  height: 1px;
   margin: 0;
 }
 
-/* --- Responsive styles for tablets and phones --- */
+.side-menu-wrapper.is-expanded .divider-item {
+  transition: opacity 0.3s ease-in 0.2s;
+  opacity: 1;
+}
+
+/* --------------- RESPONSIVENESS STYLE --------------- */
+
+/* Tablets and Phones */
 @media (max-width: 768px) {
   .side-menu-wrapper {
     width: 55px;
@@ -207,54 +233,44 @@ window.addEventListener("resize", () => {
   }
 }
 
-/* --- Mobile: turn into bottom nav (key changes here) --- */
+/* Mobile */
 @media (max-width: 600px) {
   .side-menu-wrapper {
+    /* Place at the bottom the navigation bar */
+    height: 60px;
+    width: 100%;
+    padding: 0;
     top: auto;
     bottom: 0;
     left: 0;
-    width: 100%;
-    height: 60px;
-    padding: 0;
-    display: flex;
+    
+    /* Display the elements side to side */
     justify-content: space-around;
+    white-space: nowrap;
     align-items: center;
-    overflow-x: auto; /* Enable horizontal scrolling */
-    white-space: nowrap; /* Prevent links from wrapping */
-  }
-
-  .side-menu-wrapper::before,
-  .side-menu-wrapper::after {
-    display: none; /* remove flag decoration on mobile */
-  }
-
-  .menu-top-section {
-    display: none; /* hide hamburger button */
+    overflow-x: auto;
+    display: flex;
   }
 
   .side-menu-links {
-    display: flex;
-    flex-direction: row; /* Horizontal list for mobile */
     justify-content: space-around;
-    align-items: center;
     opacity: 1 !important;
-    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    display: flex;
     height: 100%;
+    width: 100%;
     padding: 0;
   }
 
   .side-menu-links li {
-    flex-shrink: 0; /* Prevent items from shrinking */
     text-align: center;
+    flex-shrink: 0;
   }
 
   .side-menu-links a {
-    padding: 0 0.8rem; /* Adjusted padding for better fit */
     font-size: 0.85rem;
-  }
-
-  .divider-item {
-    display: none; /* no dividers in bottom nav */
+    padding: 0 0.8rem;
   }
 }
 </style>
