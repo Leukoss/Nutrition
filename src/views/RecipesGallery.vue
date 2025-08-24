@@ -5,12 +5,11 @@ import RecipeCard from '../components/RecipeCard.vue';
 const recipes = ref([]);
 const error = ref(null);
 
-// Fetch recipes from Supa API
 onMounted(async () => {
   try {
-    const supaRes = await fetch('/api/get_recipes');
+    const supaRes = await fetch('/api/get_table?table=recipes');
     const supaData = await supaRes.json();
-    if (supaData.success) recipes.value = supaData.recipes;
+    if (supaData.success) recipes.value = supaData.data;
     else error.value = supaData.error;
   } catch (e) {
     error.value = e.message;
@@ -43,8 +42,11 @@ const groupedRecipes = computed(() => {
       <div v-for="(group, type) in groupedRecipes" :key="type" class="recipe-group">
         <h2 class="group-title">{{ type }}</h2>
         <div class="cards-container">
-          <RecipeCard v-for="recipe in group" :key="recipe.id" :recipe="recipe"/>
-          <!-- Fill empty slots to keep exactly 3 per row -->
+          <RecipeCard 
+            v-for="recipe in group" 
+            :key="recipe.id" 
+            :recipe="recipe"
+          />
           <div
             v-for="i in (3 - (group.length % 3))"
             v-if="group.length % 3 !== 0"
@@ -80,7 +82,7 @@ const groupedRecipes = computed(() => {
 
 .empty-card-slot {
   width: 30%;
-  visibility: hidden; /* reserve space but invisible */
+  visibility: hidden;
 }
 
 .error {
@@ -88,7 +90,6 @@ const groupedRecipes = computed(() => {
   font-weight: bold;
 }
 
-/* Responsive adjustments */
 @media (max-width: 1024px) {
   .cards-container {
     grid-template-columns: repeat(2, 48%);
